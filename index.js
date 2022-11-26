@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 //middleware
@@ -23,6 +23,9 @@ const client = new MongoClient(uri, {
 //collections
 const userCollection = client.db("Laptop-Hut").collection("userCollection");
 const brandCollection = client.db("Laptop-Hut").collection("BrandsCollection");
+const productCollection = client
+  .db("Laptop-Hut")
+  .collection("productCollection");
 
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -30,14 +33,14 @@ function verifyJWT(req, res, next) {
     return res.status(401).send("unauthorized Access");
   }
   const token = authHeader.split(" ")[1];
-  console.log("found token", token);
+
   jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
     if (err) {
       console.log(err);
       return res.status(403).send({ message: "forbiden to Access" });
     }
     req.decoded = decoded;
-    console.log(decoded);
+
     next();
   });
 }
@@ -49,14 +52,14 @@ async function run() {
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
-      console.log(query);
+
       const user = await userCollection.findOne(query);
       if (user) {
         const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {});
-        console.log("new token", token);
+
         return res.send({ accessToken: token });
       }
-      console.log(user);
+
       res.status(403).send({ accessToken: "" });
     });
 
@@ -64,10 +67,9 @@ async function run() {
     app.put("/user", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
-      console.log(query);
+
       const updatedUser = req.body;
       const options = { upsert: true };
-      console.log(updatedUser);
 
       const newUSer = {
         $set: {
@@ -88,54 +90,185 @@ async function run() {
       const query = { email: email };
 
       const result = await userCollection.findOne(query);
-      console.log(result);
+
       res.send(result);
     });
 
     // veify admin role
     app.get("/users/admin/:email", async (req, res) => {
       const email = req.params.email;
-      console.log(email);
+
       const query = { email: email };
       const result = await userCollection.findOne(query);
-      console.log(result);
+
       res.send({ isAdmin: result?.role === "Admin" });
     });
 
     //verify seller role
     app.get("/users/seller/:email", async (req, res) => {
       const email = req.params.email;
-      console.log(email);
+
       const query = { email: email };
       const result = await userCollection.findOne(query);
-      console.log(result);
+
       res.send({ isSeller: result?.role === "Seller" });
     });
 
-   // api to load product categoris
+    // api to load product categoris
     app.get("/allcategoris", async (req, res) => {
       const query = {};
       const allBrands = await brandCollection.find(query).toArray();
-      console.log(allBrands);
+
       res.send(allBrands);
     });
 
-   
-      // admin get all user information
-    app.get("/admin/users", verifyJWT, async (req, res) => {
+    // admin get all sellers information
+    app.get("/admin/sellers", verifyJWT, async (req, res) => {
       const decodedEmail = req.decoded.email;
-      console.log("from all user", decodedEmail);
+
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
       if (tempUser?.role !== "Admin") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
-      const query = {};
+      const query = { role: "Seller" };
       const allUsers = await userCollection.find(query).toArray();
-      console.log(allUsers);
+
       res.send(allUsers);
     });
+
+    //api to add product by seller
+    app.post("/seller/addproduct", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+
+      const userquery = { email: decodedEmail };
+      const tempUser = await userCollection.findOne(userquery);
+      if (tempUser?.role !== "Seller") {
+        return res.status(403).send({ message: "forbiden hello access" });
+      }
+
+      const product = req.body;
+
+      const result = await productCollection.insertOne(product);
+      res.send(result);
+    });
+
+    // seller get all my product information
+    app.get("/seller/products", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+
+      const userquery = { email: decodedEmail };
+      const tempUser = await userCollection.findOne(userquery);
+      if (tempUser?.role !== "Seller") {
+        return res.status(403).send({ message: "forbiden hello access" });
+      }
+
+      const query = { email: decodedEmail };
+
+      const allproducts = await productCollection
+        .find({ selleremail: decodedEmail })
+        .toArray();
+
+      res.send(allproducts);
+    });
+
+    //delete a product by seller
+
+    app.delete("/seller/product/:id", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+
+      const userquery = { email: decodedEmail };
+      const tempUser = await userCollection.findOne(userquery);
+      if (tempUser?.role !== "Seller") {
+        return res.status(403).send({ message: "forbiden hello access" });
+      }
+
+      const id = req.params.id;
+
+      const filter = { _id: ObjectId(id) };
+
+      const result = await productCollection.deleteOne(filter);
+
+      res.send(result);
+    });
+
+    //delete a seller by admin
+
+    app.delete("/admin/delete/:id", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+
+      const userquery = { email: decodedEmail };
+      const tempUser = await userCollection.findOne(userquery);
+      if (tempUser?.role !== "Admin") {
+        return res.status(403).send({ message: "forbiden hello access" });
+      }
+
+      const id = req.params.id;
+
+      const filter = { _id: ObjectId(id) };
+
+      const result = await userCollection.deleteOne(filter);
+
+      res.send(result);
+    });
+
+    // admin verify user
+
+    app.put("/admin/verify/:id", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+
+      const userquery = { email: decodedEmail };
+      const tempUser = await userCollection.findOne(userquery);
+      if (tempUser?.role !== "Admin") {
+        return res.status(403).send({ message: "forbiden hello access" });
+      }
+
+      const id = req.params.id;
+
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+
+      const updatedDoc = {
+        $set: {
+          isverified: true,
+        },
+      };
+      const result = await userCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      // geting the email
+
+      const queryforseller = { _id: ObjectId(id) };
+      const updatedSeller = await userCollection.findOne(queryforseller);
+  
+
+      // updating status in products
+
+      const useremail = { selleremail: updatedSeller.email };
+      console.log(useremail)
+
+
+      const updatedProducts = {
+        $set: {
+          issellerverified: true,
+        },
+      };
+
+      const confirm = await productCollection.updateMany(
+        useremail,
+        updatedProducts 
+      
+      );
+      console.log(confirm)
+
+
+      res.send(result);
+    });
+
+    // try end
   } finally {
   }
 }
