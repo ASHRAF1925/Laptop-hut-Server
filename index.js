@@ -114,6 +114,17 @@ async function run() {
       res.send({ isSeller: result?.role === "Seller" });
     });
 
+     //verify User role
+     app.get("/users/User/:email", async (req, res) => {
+      const email = req.params.email;
+
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+
+      res.send({ isUser: result?.role === "User" });
+    });
+
+
     // api to load product categoris
     app.get("/allcategoris", async (req, res) => {
       const query = {};
