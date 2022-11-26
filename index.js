@@ -138,6 +138,31 @@ async function run() {
       res.send(allUsers);
     });
 
+
+
+
+
+
+      // admin get all buyers information
+      app.get("/admin/Buyers", verifyJWT, async (req, res) => {
+        const decodedEmail = req.decoded.email;
+  
+        const userquery = { email: decodedEmail };
+        const tempUser = await userCollection.findOne(userquery);
+        if (tempUser?.role !== "Admin") {
+          return res.status(403).send({ message: "forbiden hello access" });
+        }
+  
+        const query = { role: "User" };
+        const allUsers = await userCollection.find(query).toArray();
+  
+        res.send(allUsers);
+      });
+
+
+
+
+
     //api to add product by seller
     app.post("/seller/addproduct", verifyJWT, async (req, res) => {
       const decodedEmail = req.decoded.email;
@@ -267,6 +292,12 @@ async function run() {
 
       res.send(result);
     });
+
+
+
+
+
+     
 
     // try end
   } finally {
