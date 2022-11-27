@@ -340,6 +340,26 @@ async function run() {
       res.send(result);
     });
 
+    //send product by category
+
+    app.get("/category/:id", async (req, res) => {
+
+      console.log("send product")
+   
+      const id = req.params.id;
+      console.log(id);
+
+      const filter = { 
+        brand:id
+         };
+         console.log(filter)
+
+      const result = await productCollection.find(filter).toArray();
+      console.log(result)
+
+      res.send(result);
+    });
+
 
 
 
