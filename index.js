@@ -23,9 +23,8 @@ const client = new MongoClient(uri, {
 //collections
 const userCollection = client.db("Laptop-Hut").collection("userCollection");
 const brandCollection = client.db("Laptop-Hut").collection("BrandsCollection");
-const productCollection = client
-  .db("Laptop-Hut")
-  .collection("productCollection");
+const productCollection = client.db("Laptop-Hut").collection("productCollection");
+const advertiseCollection=client.db("Laptop-Hut").collection("advertiseCollection");
 
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -107,9 +106,11 @@ async function run() {
     //verify seller role
     app.get("/users/seller/:email", async (req, res) => {
       const email = req.params.email;
+      console.log(email)
 
-      const query = { email: email };
+      const query = { email:email };
       const result = await userCollection.findOne(query);
+      console.log(result)
 
       res.send({ isSeller: result?.role === "Seller" });
     });
@@ -303,6 +304,51 @@ async function run() {
 
       res.send(result);
     });
+
+    //api to advertise product by seller
+    app.post("/seller/advertise", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+
+      const userquery = { email: decodedEmail };
+      const tempUser = await userCollection.findOne(userquery);
+      if (tempUser?.role !== "Seller") {
+        return res.status(403).send({ message: "forbiden hello access" });
+      }
+
+
+
+      const product = req.body;
+      console.log(product)
+
+      const Product_id=req.body._id;
+      const queryforupdate = { _id: ObjectId(Product_id) };
+
+      const updatedProducts = {
+        $set: {
+          isAdvertized:true ,
+        },
+      };
+
+      const confirm = await productCollection.updateOne(
+        queryforupdate,
+        updatedProducts 
+      
+      );
+      console.log(confirm)
+
+      const result = await advertiseCollection.insertOne(product);
+      res.send(result);
+    });
+
+
+
+
+
+
+
+
+
+
 
 
 
