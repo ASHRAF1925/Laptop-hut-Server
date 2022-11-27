@@ -359,6 +359,20 @@ async function run() {
 
       res.send(result);
     });
+// get the advertise products
+    app.get("/advertise/products", async (req, res) => {
+
+    
+      const filter = { 
+        
+         };
+      
+
+      const result = await advertiseCollection.find(filter).toArray();
+      console.log(result)
+
+      res.send(result);
+    });
 
 
 
