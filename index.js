@@ -23,6 +23,7 @@ const client = new MongoClient(uri, {
 //collections
 const userCollection = client.db("Laptop-Hut").collection("userCollection");
 const brandCollection = client.db("Laptop-Hut").collection("BrandsCollection");
+const reportedItems = client.db("Laptop-Hut").collection("reportedItems");
 const productCollection = client
   .db("Laptop-Hut")
   .collection("productCollection");
@@ -392,6 +393,24 @@ async function run() {
         console.log(allproducts)
 
       res.send(allproducts);
+    });
+
+
+// reported Item
+    app.post("/buyer/order", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+      console.log("Adding product");
+
+      const userquery = { email: decodedEmail };
+      const tempUser = await userCollection.findOne(userquery);
+      if (tempUser?.role !== "User") {
+        return res.status(403).send({ message: "forbiden hello access" });
+      }
+
+      const product = req.body;
+
+      const result = await reportedItems.insertOne(product);
+      res.send(result);
     });
 
     // try end
