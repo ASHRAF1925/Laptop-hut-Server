@@ -23,9 +23,13 @@ const client = new MongoClient(uri, {
 //collections
 const userCollection = client.db("Laptop-Hut").collection("userCollection");
 const brandCollection = client.db("Laptop-Hut").collection("BrandsCollection");
-const productCollection = client.db("Laptop-Hut").collection("productCollection");
-const advertiseCollection=client.db("Laptop-Hut").collection("advertiseCollection");
-const orderCollection=client.db("Laptop-Hut").collection("orderCollection");
+const productCollection = client
+  .db("Laptop-Hut")
+  .collection("productCollection");
+const advertiseCollection = client
+  .db("Laptop-Hut")
+  .collection("advertiseCollection");
+const orderCollection = client.db("Laptop-Hut").collection("orderCollection");
 
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -107,17 +111,17 @@ async function run() {
     //verify seller role
     app.get("/users/seller/:email", async (req, res) => {
       const email = req.params.email;
-      console.log(email)
+      console.log(email);
 
-      const query = { email:email };
+      const query = { email: email };
       const result = await userCollection.findOne(query);
-      console.log(result)
+      console.log(result);
 
       res.send({ isSeller: result?.role === "Seller" });
     });
 
-     //verify User role
-     app.get("/users/User/:email", async (req, res) => {
+    //verify User role
+    app.get("/users/User/:email", async (req, res) => {
       const email = req.params.email;
 
       const query = { email: email };
@@ -125,7 +129,6 @@ async function run() {
 
       res.send({ isUser: result?.role === "User" });
     });
-
 
     // api to load product categoris
     app.get("/allcategoris", async (req, res) => {
@@ -151,30 +154,21 @@ async function run() {
       res.send(allUsers);
     });
 
+    // admin get all buyers information
+    app.get("/admin/Buyers", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
 
+      const userquery = { email: decodedEmail };
+      const tempUser = await userCollection.findOne(userquery);
+      if (tempUser?.role !== "Admin") {
+        return res.status(403).send({ message: "forbiden hello access" });
+      }
 
+      const query = { role: "User" };
+      const allUsers = await userCollection.find(query).toArray();
 
-
-
-      // admin get all buyers information
-      app.get("/admin/Buyers", verifyJWT, async (req, res) => {
-        const decodedEmail = req.decoded.email;
-  
-        const userquery = { email: decodedEmail };
-        const tempUser = await userCollection.findOne(userquery);
-        if (tempUser?.role !== "Admin") {
-          return res.status(403).send({ message: "forbiden hello access" });
-        }
-  
-        const query = { role: "User" };
-        const allUsers = await userCollection.find(query).toArray();
-  
-        res.send(allUsers);
-      });
-
-
-
-
+      res.send(allUsers);
+    });
 
     //api to add product by seller
     app.post("/seller/addproduct", verifyJWT, async (req, res) => {
@@ -281,13 +275,11 @@ async function run() {
 
       const queryforseller = { _id: ObjectId(id) };
       const updatedSeller = await userCollection.findOne(queryforseller);
-  
 
       // updating status in products
 
       const useremail = { selleremail: updatedSeller.email };
-      console.log(useremail)
-
+      console.log(useremail);
 
       const updatedProducts = {
         $set: {
@@ -297,11 +289,9 @@ async function run() {
 
       const confirm = await productCollection.updateMany(
         useremail,
-        updatedProducts 
-      
+        updatedProducts
       );
-      console.log(confirm)
-
+      console.log(confirm);
 
       res.send(result);
     });
@@ -316,26 +306,23 @@ async function run() {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
-
-
       const product = req.body;
-      console.log(product)
+      console.log(product);
 
-      const Product_id=req.body._id;
+      const Product_id = req.body._id;
       const queryforupdate = { _id: ObjectId(Product_id) };
 
       const updatedProducts = {
         $set: {
-          isAdvertized:true ,
+          isAdvertized: true,
         },
       };
 
       const confirm = await productCollection.updateOne(
         queryforupdate,
-        updatedProducts 
-      
+        updatedProducts
       );
-      console.log(confirm)
+      console.log(confirm);
 
       const result = await advertiseCollection.insertOne(product);
       res.send(result);
@@ -344,41 +331,35 @@ async function run() {
     //send product by category
 
     app.get("/category/:id", async (req, res) => {
+      console.log("send product");
 
-      console.log("send product")
-   
       const id = req.params.id;
       console.log(id);
 
-      const filter = { 
-        brand:id
-         };
-         console.log(filter)
+      const filter = {
+        brand: id,
+      };
+      console.log(filter);
 
       const result = await productCollection.find(filter).toArray();
-      console.log(result)
+      console.log(result);
 
       res.send(result);
     });
-// get the advertise products
+    // get the advertise products
     app.get("/advertise/products", async (req, res) => {
-
-    
-      const filter = { 
-        
-         };
-      
+      const filter = {};
 
       const result = await advertiseCollection.find(filter).toArray();
-      console.log(result)
+      console.log(result);
 
       res.send(result);
     });
-
 
     // api for adding order by buyer
     app.post("/buyer/order", verifyJWT, async (req, res) => {
       const decodedEmail = req.decoded.email;
+      console.log("Adding product");
 
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
@@ -388,25 +369,30 @@ async function run() {
 
       const product = req.body;
 
-      const result = await productCollection.insertOne(product);
+      const result = await orderCollection.insertOne(product);
       res.send(result);
     });
 
+    // get the ordr Lists
+    app.get("/buyer/orders", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
 
+      const userquery = { email: decodedEmail };
+      const tempUser = await userCollection.findOne(userquery);
+      if (tempUser?.role !== "User") {
+        return res.status(403).send({ message: "forbiden hello access" });
+      }
 
+      const query = { email: decodedEmail };
+      console.log("myorders")
 
+      const allproducts = await orderCollection
+        .find({ buyerEmail: decodedEmail })
+        .toArray();
+        console.log(allproducts)
 
-
-
-
-
-
-
-
-
-
-
-     
+      res.send(allproducts);
+    });
 
     // try end
   } finally {
