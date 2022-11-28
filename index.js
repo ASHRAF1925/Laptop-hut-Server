@@ -22,16 +22,6 @@ const client = new MongoClient(uri, {
 });
 
 //collections
-const userCollection = client.db("Laptop-Hut").collection("userCollection");
-const brandCollection = client.db("Laptop-Hut").collection("BrandsCollection");
-const reportedItems = client.db("Laptop-Hut").collection("reportedItems");
-const productCollection = client
-  .db("Laptop-Hut")
-  .collection("productCollection");
-const advertiseCollection = client
-  .db("Laptop-Hut")
-  .collection("advertiseCollection");
-const orderCollection = client.db("Laptop-Hut").collection("orderCollection");
 
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -53,6 +43,20 @@ function verifyJWT(req, res, next) {
 
 async function run() {
   try {
+    const userCollection = client.db("Laptop-Hut").collection("userCollection");
+    const brandCollection = client
+      .db("Laptop-Hut")
+      .collection("BrandsCollection");
+    const reportedItems = client.db("Laptop-Hut").collection("reportedItems");
+    const productCollection = client
+      .db("Laptop-Hut")
+      .collection("productCollection");
+    const advertiseCollection = client
+      .db("Laptop-Hut")
+      .collection("advertiseCollection");
+    const orderCollection = client
+      .db("Laptop-Hut")
+      .collection("orderCollection");
     //api for token genaration
 
     app.get("/jwt", async (req, res) => {
