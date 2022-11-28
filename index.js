@@ -25,6 +25,7 @@ const userCollection = client.db("Laptop-Hut").collection("userCollection");
 const brandCollection = client.db("Laptop-Hut").collection("BrandsCollection");
 const productCollection = client.db("Laptop-Hut").collection("productCollection");
 const advertiseCollection=client.db("Laptop-Hut").collection("advertiseCollection");
+const orderCollection=client.db("Laptop-Hut").collection("orderCollection");
 
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -371,6 +372,23 @@ async function run() {
       const result = await advertiseCollection.find(filter).toArray();
       console.log(result)
 
+      res.send(result);
+    });
+
+
+    // api for adding order by buyer
+    app.post("/buyer/order", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+
+      const userquery = { email: decodedEmail };
+      const tempUser = await userCollection.findOne(userquery);
+      if (tempUser?.role !== "User") {
+        return res.status(403).send({ message: "forbiden hello access" });
+      }
+
+      const product = req.body;
+
+      const result = await productCollection.insertOne(product);
       res.send(result);
     });
 
