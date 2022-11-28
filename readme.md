@@ -1,8 +1,7 @@
-# House Of CSE
+# Lapto-Hut Server Side
 
 
-Alien's Photography  is a personal website where you can get different services.
-
+Laptop hut is a website where user can sell or buy used laptops
 ## Features
 
 - Different Types of Services
