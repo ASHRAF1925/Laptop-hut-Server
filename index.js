@@ -397,7 +397,7 @@ async function run() {
 
 
 // reported Item
-    app.post("/buyer/order", verifyJWT, async (req, res) => {
+    app.post("/admin/reportedItem", verifyJWT, async (req, res) => {
       const decodedEmail = req.decoded.email;
       console.log("Adding product");
 
@@ -410,6 +410,24 @@ async function run() {
       const product = req.body;
 
       const result = await reportedItems.insertOne(product);
+      res.send(result);
+    });
+
+    //api to get all reported Item by admin
+    // reported Item
+    app.get("/admin/reportedItem", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+      console.log("Adding product");
+
+      const userquery = { email: decodedEmail };
+      const tempUser = await userCollection.findOne(userquery);
+      if (tempUser?.role !== "Admin") {
+        return res.status(403).send({ message: "forbiden hello access" });
+      }
+
+     const filter={}
+
+      const result = await reportedItems.find(filter).toArray();
       res.send(result);
     });
 
