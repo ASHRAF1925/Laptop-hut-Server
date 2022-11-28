@@ -13,8 +13,8 @@ app.use(express.json());
 const port = process.env.PORT || 5000;
 
 // Mongo db connection
-const uri = `mongodb+srv://${process.env.DB_user}:${process.env.DB_Password}@cluster0.wbiuqtd.mongodb.net/?retryWrites=true&w=majority`;
-
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_Password}@cluster0.wbiuqtd.mongodb.net/?retryWrites=true&w=majority`;
+console.log(uri)
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -435,31 +435,32 @@ async function run() {
       res.send(result);
     });
 
-    // // api to delte reporte Item
-    // app.delete("/admin/reported/delete/:id", verifyJWT, async (req, res) => {
-    //   const decodedEmail = req.decoded.email;
-    //   console.log("delete reported Item");
-    //   const userquery = { email: decodedEmail };
-    //   const tempUser = await userCollection.findOne(userquery);
-    //   console.log(tempUser);
-    //   if (tempUser?.role !== "Admin") {
-    //     return res.status(403).send({ message: "forbiden hello access" });
-    //   }
+    // api to delte reporte Item
+    app.delete("/admin/reported/delete/:id", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+      console.log("delete reported Item");
+      const userquery = { email: decodedEmail };
+      const tempUser = await userCollection.findOne(userquery);
+      console.log(tempUser);
+      if (tempUser?.role !== "Admin") {
+        return res.status(403).send({ message: "forbiden hello access" });
+      }
 
-    //   const id = req.params.id;
-    //   console.log(id);
+      const id = req.params.id;
+      console.log(id);
 
-    //   const filter = { _id: ObjectId(id) };
+      const filter = { _id: ObjectId(id) };
 
-    //   const result = await reportedItems.deleteOne(filter);
+      const result = await reportedItems.deleteOne(filter);
 
-    //   res.send(result);
-    // });
+      res.send(result);
+    });
 
     // try end
   } finally {
   }
-}
+} */
+
 run().catch(console.log);
 
 // api for checking server working
