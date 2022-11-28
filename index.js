@@ -385,18 +385,17 @@ async function run() {
       }
 
       const query = { email: decodedEmail };
-      console.log("myorders")
+      console.log("myorders");
 
       const allproducts = await orderCollection
         .find({ buyerEmail: decodedEmail })
         .toArray();
-        console.log(allproducts)
+      console.log(allproducts);
 
       res.send(allproducts);
     });
 
-
-// reported Item
+    // reported Item
     app.post("/admin/reportedItem", verifyJWT, async (req, res) => {
       const decodedEmail = req.decoded.email;
       console.log("Adding product");
@@ -425,9 +424,30 @@ async function run() {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
-     const filter={}
+      const filter = {};
 
       const result = await reportedItems.find(filter).toArray();
+      res.send(result);
+    });
+
+    // api to delte reporte Item
+    app.delete("/admin/reported/delete/:id", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+      console.log("delete reported Item");
+      const userquery = { email: decodedEmail };
+      const tempUser = await userCollection.findOne(userquery);
+      console.log(tempUser);
+      if (tempUser?.role !== "Admin") {
+        return res.status(403).send({ message: "forbiden hello access" });
+      }
+
+      const id = req.params.id;
+      console.log(id);
+
+      const filter = { _id: ObjectId(id) };
+
+      const result = await reportedItems.deleteOne(filter);
+
       res.send(result);
     });
 
