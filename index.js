@@ -111,7 +111,7 @@ async function run() {
       const query = { email: email };
       const result = await userCollection.findOne(query);
 
-      res.send({ isAdmin: result?.role === "Admin" });
+      res.send({ isAdmin: result.role === "Admin" });
     });
 
     //verify seller role
@@ -123,7 +123,7 @@ async function run() {
       const result = await userCollection.findOne(query);
       console.log(result);
 
-      res.send({ isSeller: result?.role === "Seller" });
+      res.send({ isSeller: result.role === "Seller" });
     });
 
     //verify User role
@@ -133,7 +133,7 @@ async function run() {
       const query = { email: email };
       const result = await userCollection.findOne(query);
 
-      res.send({ isUser: result?.role === "User" });
+      res.send({ isUser: result.role === "User" });
     });
 
     // api to load product categoris
@@ -150,7 +150,7 @@ async function run() {
 
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
-      if (tempUser?.role !== "Admin") {
+      if (tempUser.role !== "Admin") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
@@ -166,7 +166,7 @@ async function run() {
 
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
-      if (tempUser?.role !== "Admin") {
+      if (tempUser.role !== "Admin") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
@@ -182,7 +182,7 @@ async function run() {
 
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
-      if (tempUser?.role !== "Seller") {
+      if (tempUser.role !== "Seller") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
@@ -198,7 +198,7 @@ async function run() {
 
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
-      if (tempUser?.role !== "Seller") {
+      if (tempUser.role !== "Seller") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
@@ -218,7 +218,7 @@ async function run() {
 
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
-      if (tempUser?.role !== "Seller") {
+      if (tempUser.role !== "Seller") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
@@ -238,7 +238,7 @@ async function run() {
 
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
-      if (tempUser?.role !== "Admin") {
+      if (tempUser.role !== "Admin") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
@@ -258,7 +258,7 @@ async function run() {
 
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
-      if (tempUser?.role !== "Admin") {
+      if (tempUser.role !== "Admin") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
@@ -303,12 +303,12 @@ async function run() {
     });
 
     //api to advertise product by seller
-    app.post("/seller/advertise", verifyJWT, async (req, res) => {
+    app.post("/seller/postforSell", verifyJWT, async (req, res) => {
       const decodedEmail = req.decoded.email;
 
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
-      if (tempUser?.role !== "Seller") {
+      if (tempUser.role !== "Seller") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
@@ -353,7 +353,7 @@ async function run() {
       res.send(result);
     });
     // get the advertise products
-    app.get("/advertise/products", async (req, res) => {
+    app.get("/postforSell/products", async (req, res) => {
       const filter = {};
 
       const result = await advertiseCollection.find(filter).toArray();
@@ -369,7 +369,7 @@ async function run() {
 
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
-      if (tempUser?.role !== "User") {
+      if (tempUser.role !== "User") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
@@ -385,7 +385,7 @@ async function run() {
 
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
-      if (tempUser?.role !== "User") {
+      if (tempUser.role !== "User") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
@@ -407,7 +407,7 @@ async function run() {
 
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
-      if (tempUser?.role !== "User") {
+      if (tempUser.role !== "User") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
@@ -425,7 +425,7 @@ async function run() {
 
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
-      if (tempUser?.role !== "Admin") {
+      if (tempUser.role !== "Admin") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
@@ -442,7 +442,7 @@ async function run() {
       const userquery = { email: decodedEmail };
       const tempUser = await userCollection.findOne(userquery);
       console.log(tempUser);
-      if (tempUser?.role !== "Admin") {
+      if (tempUser.role !== "Admin") {
         return res.status(403).send({ message: "forbiden hello access" });
       }
 
@@ -459,7 +459,7 @@ async function run() {
     // try end
   } finally {
   }
-} */
+} 
 
 run().catch(console.log);
 
